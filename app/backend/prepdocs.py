@@ -11,6 +11,7 @@ from azure.identity.aio import AzureDeveloperCliCredential, get_bearer_token_pro
 from load_azd_env import load_azd_env
 from prepdocslib.blobmanager import BlobManager
 from prepdocslib.csvparser import CsvParser
+from prepdocslib.PPTXParser import PPTXParser
 from prepdocslib.embeddings import (
     AzureOpenAIEmbeddingService,
     ImageEmbeddings,
@@ -155,6 +156,7 @@ def setup_file_processors(
     document_intelligence_key: Union[str, None] = None,
     local_pdf_parser: bool = False,
     local_html_parser: bool = False,
+    local_pptx_parser: bool = True,
     search_images: bool = False,
 ):
     sentence_text_splitter = SentenceTextSplitter(has_image_embeddings=search_images)
@@ -192,6 +194,7 @@ def setup_file_processors(
         ".md": FileProcessor(TextParser(), sentence_text_splitter),
         ".txt": FileProcessor(TextParser(), sentence_text_splitter),
         ".csv": FileProcessor(CsvParser(), sentence_text_splitter),
+        ".pptx": FileProcessor(PPTXParser(), sentence_text_splitter),
     }
     # These require either a Python package or Document Intelligence
     if pdf_parser is not None:
@@ -203,9 +206,9 @@ def setup_file_processors(
         file_processors.update(
             {
                 ".docx": FileProcessor(doc_int_parser, sentence_text_splitter),
-                ".pptx": FileProcessor(doc_int_parser, sentence_text_splitter),
+                #".pptx": FileProcessor(doc_int_parser, sentence_text_splitter),
                 ".xlsx": FileProcessor(doc_int_parser, sentence_text_splitter),
-                ".png": FileProcessor(doc_int_parser, sentence_text_splitter),
+                ".png": FileProcessor(doc_int_parser, sentence_text_splitter),                        
                 ".jpg": FileProcessor(doc_int_parser, sentence_text_splitter),
                 ".jpeg": FileProcessor(doc_int_parser, sentence_text_splitter),
                 ".tiff": FileProcessor(doc_int_parser, sentence_text_splitter),
@@ -394,6 +397,7 @@ if __name__ == "__main__":
             document_intelligence_key=clean_key_if_exists(args.documentintelligencekey),
             local_pdf_parser=os.getenv("USE_LOCAL_PDF_PARSER") == "true",
             local_html_parser=os.getenv("USE_LOCAL_HTML_PARSER") == "true",
+            local_pptx_parser=os.getenv("USE_LOCAL_PPTX_PARSER") == "true",
             search_images=use_gptvision,
         )
         image_embeddings_service = setup_image_embeddings_service(
